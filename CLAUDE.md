@@ -30,11 +30,12 @@ Copy `.env.example` to `.env` and fill in values. Required vars are defined in [
 
 ## Skill Loading (load the relevant skill before starting work)
 
-<!-- TODO: fill in skills relevant to your project domain -->
-
 | Task type | Load this skill |
 |---|---|
-| Example: database queries | [database-work](.claude/plugins/<plugin>/skills/database-work/SKILL.md) |
+| Any code implementation | [constitution](.claude/plugins/generic-project/skills/constitution/SKILL.md) |
+| Database queries / schema changes | [database-work](.claude/plugins/generic-project/skills/database-work/SKILL.md) |
+| Docker / deployment / env vars | [devops-infra](.claude/plugins/generic-project/skills/devops-infra/SKILL.md) |
+<!-- TODO: add project-specific skills here -->
 
 ## Canonical Sources
 
