@@ -1,0 +1,5 @@
+{
+  "name": "generic-project",
+  "version": "1.0.0",
+  "description": "Project-agnostic agents and commands for documentation auditing and quality gates."
+}
