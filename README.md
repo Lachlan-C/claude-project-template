@@ -35,7 +35,7 @@ Opinionated project template for Claude Code. Works for **any type of programmin
 - **`/quality-gate`** — runs the full quality gate (formatter, linter, tests) as defined in `CLAUDE.md`
 
 **Agents:**
-- **`docs-auditor`** — audits documentation in three phases: doc-to-doc consistency, docs vs code, and docs vs external standards. Understands which docs are optional.
+- **`docs-auditor`** — audits documentation in three sequential phases: (1) doc-to-doc internal consistency and cross-link integrity, (2) docs vs code with justified-deviation vs implementation-gap classification, and (3) template conformance, external technology standards (fetches official docs), and industry standards (OWASP, 12-factor, CIS, etc.). Understands which docs are optional and skips Phase 2 for pre-implementation projects. Triggers both on explicit requests and proactively after structural code changes.
 
 **Skills** (auto-loaded based on task type):
 | Skill | Triggers on | Optional? |
