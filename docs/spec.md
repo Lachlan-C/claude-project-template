@@ -1,8 +1,11 @@
 # [Project Name] - Product Spec
 
-> **Related files:** [design.md](design.md) (how) | [adr/](adr/) (why) | [tasks.md](tasks.md) (task checklist) | [schema.md](schema.md) (tables) | [api.md](api.md) (endpoints) | [../constitution.md](../constitution.md) (immutable rules)
+> **Related files:** [design.md](design.md) (how) | [adr/](adr/) (why) | [tasks.md](tasks.md) (task checklist) | [../constitution.md](../constitution.md) (immutable rules)
 >
-> **This doc owns:** User flows, acceptance criteria, edge cases, non-goals. It references but never duplicates endpoint contracts ([api.md](api.md)), schema details ([schema.md](schema.md)), or architecture decisions ([design.md](design.md)).
+> **This doc owns:** User flows, acceptance criteria, edge cases, non-goals. It references but never duplicates architecture decisions ([design.md](design.md)) or technology rationale ([adr/](adr/)).
+
+<!-- OPTIONAL DOCS: Add these to the Related files header if your project uses them:
+     | [schema.md](schema.md) (data model) | [api.md](api.md) (endpoints) | [environment.md](environment.md) (env/deps) -->
 
 ## What
 
@@ -71,15 +74,24 @@
 - [ ] [Core flow works end-to-end]
 - [ ] [Key feature works correctly]
 
-### Security
-- [ ] Zero HIGH/CRITICAL CVEs
-- [ ] Auth enforced on all protected routes
-- [ ] No plaintext secrets in logs, responses, or database
+### Quality
+- [ ] Zero linter warnings, zero test failures
+- [ ] No plaintext secrets in logs, responses, or storage
 
 ### Operational
-- [ ] Server starts in < [N] seconds, health check at `/health`
-- [ ] Graceful shutdown
+- [ ] Project builds and runs successfully
+- [ ] Graceful error handling on all user-facing paths
 
-### Data Integrity
-- [ ] [Key invariant holds, e.g. ledger balances]
+<!-- OPTIONAL: Add sections below based on your project type.
+
+### Security (for networked/deployed projects)
+- [ ] Zero HIGH/CRITICAL CVEs
+- [ ] Auth enforced on all protected routes
+
+### Data Integrity (for projects with persistent storage)
+- [ ] [Key invariant holds]
 - [ ] Audit log is append-only
+
+### Performance (if applicable)
+- [ ] [Benchmark target, e.g. "parses 10k lines/sec"]
+-->

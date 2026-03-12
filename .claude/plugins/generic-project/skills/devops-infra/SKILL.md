@@ -39,16 +39,16 @@ Target production image size: as small as feasible for the runtime.
 
 All secrets live in `.env` (gitignored). Reference via environment variables — never hardcode values in source code or Docker images.
 
-Standard variables every project should define:
+Common variables (include only what your project needs):
 
-| Variable | Purpose |
-|---|---|
-| `HOST` | Bind address (e.g. `0.0.0.0`) |
-| `PORT` | Listen port |
-| `DATABASE_URL` | Primary database connection string |
-| `CSRF_SECRET` | CSRF token signing secret |
+| Variable | Purpose | Used by |
+|---|---|---|
+| `HOST` | Bind address (e.g. `0.0.0.0`) | Servers, web apps |
+| `PORT` | Listen port | Servers, web apps |
+| `DATABASE_URL` | Primary database connection string | DB-backed projects |
+| `API_KEY` | External service API key | Projects calling external APIs |
 
-Add project-specific variables to `docs/environment.md`.
+Add project-specific variables to `docs/environment.md` (if present).
 
 ## Docker Compose
 

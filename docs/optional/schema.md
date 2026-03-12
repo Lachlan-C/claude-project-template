@@ -1,10 +1,17 @@
-# Schema Reference
+# Schema / Data Model Reference
 
-> **Related files:** [design.md](design.md) (system design) | [adr/](adr/) (why these choices) | [api.md](api.md) (endpoints) | [../constitution.md](../constitution.md) (immutable rules)
+<!-- OPTIONAL DOC: Include this file only if your project uses a persistent data store
+     (SQL database, NoSQL, file-based storage with defined schemas, etc.).
+     To use: copy this file to docs/schema.md and add it to the Related files headers
+     in design.md, spec.md, tasks.md, and the Canonical Sources table in CLAUDE.md. -->
 
-This document is the single source of truth for all tables, fields, relationships, and data conventions. **Read this before modifying any database table or collection.**
+> **Related files:** [../design.md](../design.md) (system design) | [../adr/](../adr/) (why these choices) | [../../constitution.md](../../constitution.md) (immutable rules)
+>
+> If your project also has an API: | [api.md](api.md) (endpoints)
 
-> **This doc owns:** All table schemas, field types, constraints, indexes, invariants, atomic operation steps, and standard audit action names. Other docs reference schema details here by link — they never repeat field definitions or invariants inline.
+This document is the single source of truth for all data schemas — tables, collections, file formats, or any structured persistent data. **Read this before modifying any data structure.**
+
+> **This doc owns:** All data schemas, field types, constraints, indexes, invariants, atomic operation steps. Other docs reference schema details here by link — they never repeat field definitions or invariants inline.
 
 ---
 

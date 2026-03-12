@@ -15,49 +15,38 @@ These rules are non-negotiable. They apply to every phase, every task, every com
 
 Violating any of these is an immediate rollback. No exceptions:
 
-- **No plaintext passwords or API keys.** Use appropriate hashing (bcrypt, argon2, etc.).
-- **No string interpolation in SQL.** All queries use parameterized bindings.
+- **No plaintext passwords or API keys.** Use appropriate hashing.
 - **No logging secrets** (passwords, API keys, tokens).
-- **No committing secrets to git.** `.env` must be in `.gitignore`.
-- **No skipping auth verification on protected routes.**
-- **No skipping CSRF tokens on form submissions** (if applicable).
-- **No cross-tenant data access.** Every query scoped to authenticated user's context.
-- **No business logic in route handlers.** Routes only parse input, call services, return responses.
-- **No deploying containers as root.**
-- **No baking secrets into Docker images.**
+- **No committing secrets to git.**
+- **No ignoring input validation** at system boundaries.
+
+Check `constitution.md` for project-specific hard stops (SQL injection rules, auth rules, deployment rules, etc. — these vary by project type).
 
 ## Always Do (After Every Task)
 
 - Run the quality gate (see `CLAUDE.md` for the exact command).
-- Use parameterized queries for all database access.
-- Scope all data queries to the authenticated user's context.
-- Log every mutation to the audit trail.
-- Validate all user input at the service layer boundary.
+- Validate all input at system boundaries.
 - Handle all errors explicitly — never swallow exceptions.
-- Keep secrets in `.env` (gitignored) and reference via environment variables.
-- Write unit tests for pure business logic.
+- Keep secrets out of source code and version control.
+- Write unit tests for pure logic.
+
+Check `constitution.md` for project-specific "always do" rules.
 
 ## Ask First (Needs Human Review)
 
-- Adding new database tables or columns (check `docs/schema.md` first).
-- Adding or modifying API endpoints (check `docs/api.md` first).
-- Changing authentication or authorization logic.
-- Modifying the middleware stack order (security-critical).
 - Adding new dependencies.
-- Modifying Docker or deployment configuration.
+- Changing the project's public interface or API surface.
+- Any change to the constitution file.
+
+Check `constitution.md` for project-specific "ask first" rules (database changes, endpoint changes, auth changes, etc.).
 
 ## Language & Stack Constraints
 
-<!-- TODO: fill in after project is initialized -->
-<!-- e.g. Always use Python 3.12+. No other backend language. -->
-<!-- e.g. No external JS frameworks. HTMX + server-rendered HTML only. -->
+See `constitution.md` — fill in after project is initialized.
 
 ## Architecture
 
-- 3-layer separation: Routes (presentation) → Services (business logic) → Data (storage).
-- No business logic in route handlers. Routes only parse input, call services, return responses.
-- Atomic operations: related writes must happen in a single database transaction.
-- Audit trail: every mutation logged with actor, action, resource, IP, timestamp.
+See `constitution.md` — architecture rules vary by project type.
 
 ## Design Principles
 
@@ -75,5 +64,5 @@ Before every commit, verify:
 1. Formatter passes
 2. Linter passes with zero warnings
 3. All tests pass
-4. No secrets in staged files
-5. All new SQL uses parameterized bindings
+4. Project builds and runs without errors
+5. No secrets in staged files

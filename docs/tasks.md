@@ -1,8 +1,11 @@
 # [Project Name] - Tasks
 
-> **Related files:** [design.md](design.md) (system design & phases) | [adr/](adr/) (why) | [environment.md](environment.md) (env vars, deps, Docker) | [spec.md](spec.md) (acceptance criteria) | [schema.md](schema.md) (tables) | [api.md](api.md) (endpoints) | [../constitution.md](../constitution.md) (immutable rules)
+> **Related files:** [design.md](design.md) (system design & phases) | [adr/](adr/) (why) | [spec.md](spec.md) (acceptance criteria) | [../constitution.md](../constitution.md) (immutable rules)
 >
-> **This doc owns:** Task sequence, parallelism markers, file paths, validation gates. Endpoint contracts live in [api.md](api.md). Schema details live in [schema.md](schema.md). Validation gates reference those docs rather than duplicating their content.
+> **This doc owns:** Task sequence, parallelism markers, file paths, validation gates.
+
+<!-- OPTIONAL DOCS: Add these to the Related files header if your project uses them:
+     | [environment.md](environment.md) (env/deps) | [schema.md](schema.md) (data model) | [api.md](api.md) (endpoints) -->
 
 Sequential task IDs. Complete in order unless marked `[parallel]`.
 After each task, run the quality gate checks before moving on.
@@ -14,173 +17,131 @@ After each task, run the quality gate checks before moving on.
 # e.g. Rust:   cargo check && cargo fmt && cargo clippy -- -D warnings && cargo test
 # e.g. Node:   npm run lint && npm test
 # e.g. Python: ruff check . && pytest
+# e.g. Go:     go vet ./... && go test ./...
+# e.g. C/C++:  make && make test
 ```
 
 ---
 
-## Phase 1: Project Skeleton & Database
+## Phase 1: Project Skeleton
 
-> **Goal:** Compiling/running project with health check endpoint and database migrations applied.
-> **Key docs:** [design.md](design.md) for project structure, [schema.md](schema.md) for table schemas.
+> **Goal:** Project compiles/runs, basic structure in place, build/test cycle works.
+> **Key docs:** [design.md](design.md) for project structure.
 
 - [ ] **T001** Initialize project
-  - Files: `[Cargo.toml / package.json / pyproject.toml]`, `src/main.[ext]`
-- [ ] **T002** Add dependencies — see [environment.md#key-dependencies](environment.md#key-dependencies) for exact versions
-- [ ] **T003** Create `.env.example` (template, no secrets) and `.env` (gitignored) `[parallel: T002]`
-  - Files: `.env.example`, `.env`, `.gitignore`
-  - Ref: [environment.md#environment-variables](environment.md#environment-variables) for all vars
-- [ ] **T004** Write config loading — load env vars with validation on startup
-  - Files: `src/config.[ext]`
-- [ ] **T005** Write database setup — connection pool + migration runner
-  - Files: `src/db.[ext]`
-- [ ] **T006** Create `migrations/001_initial.sql` — core tables + indexes `[parallel: T005]`
-  - Ref: [schema.md](schema.md) for exact schema
-- [ ] **T007** Write error types
-  - Files: `src/error.[ext]`
-- [ ] **T008** Write main entry point — server setup, router, health check endpoint
+  - Files: `[Cargo.toml / package.json / pyproject.toml / Makefile / go.mod]`, `src/main.[ext]`
+- [ ] **T002** Add dependencies `[parallel: T001]`
+- [ ] **T003** Write entry point — minimal working program
   - Files: `src/main.[ext]`
-  - Ref: [api.md#health-check](api.md#health-check)
-- [ ] **T008b** Write integration test for health check endpoint `[parallel: T009]`
-  - Test: `GET /health` returns 200 with expected body
-- [ ] **T009** Create module scaffolding `[parallel: T008]`
-  - Files: `src/middleware/`, `src/routes/`, `src/services/`
-- [ ] **T010** Docker Compose: app + any sidecars `[parallel: T009]`
-  - Files: `docker-compose.yml`, `.dockerignore`
-  - Ref: [environment.md#docker-strategy](environment.md#docker-strategy)
+- [ ] **T004** Create module/package scaffolding `[parallel: T003]`
+  - Files: project structure per [design.md#project-structure](design.md#project-structure)
+- [ ] **T005** Write error types/handling
+  - Files: `src/error.[ext]`
+- [ ] **T005b** Write first test — verify basic functionality `[parallel: T005]`
 
 ### Validation Gate 1
 - [ ] Quality gate passes
-- [ ] Server starts, `GET /health` returns 200
-- [ ] Health check integration test passes
-- [ ] Database migrations applied (all tables exist)
-- [ ] `.env` is in `.gitignore`
+- [ ] Project builds and runs successfully
+- [ ] At least one test passes
 - [ ] Project structure matches [design.md#project-structure](design.md#project-structure)
 - [ ] No `TODO`, stub placeholders, or `unimplemented` markers left in committed code
-- [ ] **Spec compliance check** — read [schema.md](schema.md), then verify the migration files match exactly: table names, column names, types, constraints, and indexes. If anything differs, uncheck this gate and fix before proceeding.
-- [ ] **Language & stack check** — verify no banned dependencies crept in: check that only the approved languages, frameworks, and databases defined in [constitution.md#language--stack](../constitution.md#language--stack) are present in the dependency manifest. If any violation is found, uncheck this gate and fix before proceeding.
-- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles) and review the code written in this phase: no abstractions built for a single consumer, no speculative config options or extension points, no unnecessary helpers, no comments on trivial code. If any violation is found, uncheck this gate and fix before proceeding.
+- [ ] **Language & stack check** — verify only approved languages, frameworks, and dependencies per [constitution.md#language--stack](../constitution.md#language--stack) are present.
+- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles) and review: no abstractions for single consumers, no speculative config, no unnecessary helpers.
+
+<!-- OPTIONAL: Add these tasks/gates if your project has a database:
+- [ ] **T0XX** Write database setup — connection pool + migration runner
+- [ ] **T0XX** Create initial migration — core tables + indexes (ref: schema.md)
+- [ ] Database migrations applied (all tables exist)
+- [ ] **Spec compliance check** — verify migration files match schema.md exactly
+-->
+
+<!-- OPTIONAL: Add these tasks/gates if your project needs env var config:
+- [ ] **T0XX** Create `.env.example` and `.env` (gitignored)
+- [ ] **T0XX** Write config loading with validation on startup
+- [ ] `.env` is in `.gitignore`
+-->
 
 ---
 
-## Phase 2: Auth & Security Middleware
+## Phase 2: Core Feature(s)
 
-> **Goal:** Working auth flow, security middleware stack.
-> **Key docs:** [api.md](api.md) for endpoint contracts, [design.md#security-architecture](design.md#security-architecture) for middleware stack order.
+> **Goal:** [Describe the core domain feature]
+> **Key docs:** [spec.md](spec.md) for acceptance criteria.
 
-- [ ] **T011** Write auth service/middleware — verify tokens, extract user context
-  - Files: `src/middleware/auth.[ext]`
-- [ ] **T012** Write security headers middleware `[parallel: T011]`
-  - Files: `src/middleware/security_headers.[ext]`
-  - Ref: [design.md#security-headers](design.md#security-headers-set-on-every-response)
-- [ ] **T013** Add rate limiting `[parallel: T012]`
-  - Ref: [api.md#rate-limits](api.md#rate-limits)
-- [ ] **T014** Add CSRF protection on all form routes (if applicable) `[parallel: T013]`
-- [ ] **T015** Add body size limit middleware `[parallel: T014]`
-- [ ] **T016** Write audit log service `[parallel: T011]`
-  - Files: `src/services/audit.[ext]`
-  - Ref: [schema.md#audit_log](schema.md#audit_log)
-- [ ] **T017** Write user/auth routes (login, register)
-  - Files: `src/routes/auth.[ext]`
-- [ ] **T018** Write login page template `[parallel: T017]`
+<!-- TODO: break down your core feature into tasks following the same pattern -->
+
+- [ ] **T006** Implement [core feature] — main logic
+  - Files: `src/[module].[ext]`
+- [ ] **T006b** Write unit tests for [core feature] `[parallel: T007]`
+  - Tests: happy path, edge cases, error cases
+- [ ] **T007** Implement [supporting feature] `[parallel: T006]`
+- [ ] **T008** Write integration/end-to-end tests
 
 ### Validation Gate 2
 - [ ] Quality gate passes
 - [ ] All Phase 1 validation gate items still pass (regression guard)
-- [ ] Login works: credentials → session/token set
-- [ ] Protected routes return 401 without valid auth
-- [ ] Security headers present on all responses
-- [ ] CSRF token in forms, POST without token returns 403 (if applicable)
-- [ ] Rate limiting: excess requests return 429
-- [ ] No secrets in logs
+- [ ] Core feature works end-to-end
+- [ ] Unit tests pass for all logic
 - [ ] No `TODO`, stub placeholders, or `unimplemented` markers left in committed code
-- [ ] **Spec compliance check** — read [api.md](api.md) for auth endpoints and [design.md#security-architecture](design.md#security-architecture) for middleware stack order and exact security header values, then verify: every endpoint path, method, request/response shape matches the contract; middleware stack order matches the design; all header names and values match. Any discrepancy — uncheck this gate and fix before proceeding.
-- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles) and review the code written in this phase: no unnecessary abstractions or traits for single-use cases, no global mutable state, pure functions used for validation logic, no feature flags or backwards-compatibility shims. If any violation is found, uncheck this gate and fix before proceeding.
+- [ ] **Spec compliance check** — read [spec.md](spec.md) acceptance criteria, verify each is satisfied by actual code (not just by a passing test).
+- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles): pure functions for business logic, domain concepts use appropriate types, each function does one thing, no duplicated logic.
+
+<!-- OPTIONAL: Add these gates if your project has an API:
+- [ ] All endpoint paths/methods/request/response shapes match api.md
+-->
+
+<!-- OPTIONAL: Add these gates if your project has a database:
+- [ ] All schema fields written to the DB match schema.md
+- [ ] Audit log entries created for all mutations (if applicable)
+-->
 
 ---
 
-## Phase 3: [Core Feature(s)]
+## Phase N: Testing & Hardening
 
-> **Goal:** [Describe the core domain feature]
-> **Key docs:** [spec.md](spec.md) for acceptance criteria, [schema.md](schema.md) for schema, [api.md](api.md) for endpoint contracts.
-
-<!-- TODO: break down your core feature into tasks following the same pattern -->
-
-- [ ] **T019** Write [resource] service — creation, validation, status management
-  - Files: `src/services/[resource].[ext]`
-- [ ] **T019b** Write unit tests for [resource] service logic `[parallel: T020]`
-  - Tests: happy path, edge cases, error cases
-- [ ] **T020** Write audit integration in [resource] service `[parallel: T019]`
-- [ ] **T021** Add [resource] API endpoints
-  - Files: `src/routes/api.[ext]`
-  - Ref: [api.md#resource-api](api.md#resource-api)
-- [ ] **T021b** Write integration tests for [resource] endpoints `[parallel: T022]`
-
-### Validation Gate 3
-- [ ] Quality gate passes
-- [ ] All prior validation gate items still pass (regression guard)
-- [ ] [Resource] CRUD works end-to-end
-- [ ] Unit tests pass for all service logic
-- [ ] Integration tests pass for all endpoints
-- [ ] Audit log entries created for all mutations
-- [ ] Tenant/org isolation enforced
-- [ ] No `TODO`, stub placeholders, or `unimplemented` markers left in committed code
-- [ ] **Spec compliance check** — read [spec.md](spec.md) acceptance criteria and [api.md](api.md) endpoint contracts for this phase, then verify: each acceptance criterion is satisfied by actual code (not just by a passing test), all endpoint paths/methods/request/response shapes match, all schema fields written to the DB match [schema.md](schema.md). Any deviation — uncheck this gate and fix before proceeding.
-- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles) and review the code written in this phase: pure functions for business logic, domain concepts use newtypes or enums (not raw strings), each function does one thing only, no duplicated business rules across modules. If any violation is found, uncheck this gate and fix before proceeding.
-
----
-
-## Phase N: Testing, Security Audit & Hardening
-
-> **Goal:** End-to-end tests, cross-cutting security tests, dependency audit.
+> **Goal:** Comprehensive tests, edge cases, code quality sweep.
 > **Key docs:** [spec.md#success-criteria](spec.md#success-criteria), [constitution.md](../constitution.md).
 
-- [ ] **TN01** Write end-to-end integration tests — full flow across all layers
-- [ ] **TN02** Write cross-cutting security tests `[parallel: TN01]`
-  - Covers: auth bypass, CSRF enforcement, rate limiting, tenant isolation
-- [ ] **TN03** Run dependency audit — fix any CVE or license issues `[parallel: TN02]`
-- [ ] **TN04** Security review: grep for unsafe error handling, plaintext secrets, missing validation `[parallel: TN03]`
-- [ ] **TN05** Implement graceful shutdown `[parallel: TN04]`
+- [ ] **TN01** Write comprehensive tests — cover all edge cases and error paths
+- [ ] **TN02** Run dependency audit — fix any CVE or license issues `[parallel: TN01]`
+- [ ] **TN03** Code review: grep for unsafe error handling, plaintext secrets, missing validation `[parallel: TN02]`
 
 ### Validation Gate N
 - [ ] Quality gate passes
 - [ ] All prior validation gate items still pass (regression guard)
-- [ ] Dependency audit passes (zero HIGH/CRITICAL CVEs)
-- [ ] All auth, CSRF, rate limiting, isolation tests pass
-- [ ] Graceful shutdown: server drains in-flight requests
 - [ ] No unsafe error handling on user input, no plaintext secrets
 - [ ] No `TODO`, stub placeholders, or `unimplemented` markers left in committed code
-- [ ] **Architecture compliance check** — read [constitution.md](../constitution.md) in full, then verify the entire codebase: error handling follows the constitution rules, no business logic leaks into route handlers, no direct DB access outside the service layer, all security hard requirements are met. This is structural — it catches coupling and layering violations that passing tests won't catch.
-- [ ] **Spec compliance check** — read [spec.md#success-criteria](spec.md#success-criteria) and [spec.md#key-properties](spec.md#key-properties) in full, then walk through every item against the actual implementation. This is not a re-run of tests — it is a deliberate line-by-line audit. For each criterion, confirm the code satisfies it (not just that a test passes). Anything unverified or incorrect — uncheck and fix before proceeding.
-- [ ] **Testing quality check** — read [constitution.md#testing](../constitution.md#testing) and audit the test suite: every service-layer function has at least one unit test, every endpoint has at least one integration test, unit tests are co-located with source (not only in `tests/`), integration tests each get isolated state (no shared DB or global state between tests), test names follow a consistent `test_<function>_<scenario>` pattern, no tests that just restate the implementation. If any violation is found, uncheck this gate and fix before proceeding.
-- [ ] **Dead code check** — no modules, functions, interfaces, or enum variants exist without a current consumer; no dead-code suppression workarounds (e.g. `#[allow(dead_code)]`, `_` prefixes masking real issues); no commented-out code. Confirm the linter reports zero dead code warnings. If any is found, delete it before proceeding.
-- [ ] **Design principles check** — read [constitution.md#design-principles](../constitution.md#design-principles) end-to-end and sweep the entire codebase: flag any premature abstractions, any interfaces/traits with a single implementor, any generics used with one concrete type, any helper only called once, any dead variants or speculative extension points, any global mutable state. This is a holistic pass — individual gate checks caught phase-level issues; this catches drift accumulated across the whole codebase. Fix before proceeding.
+- [ ] **Architecture compliance check** — read [constitution.md](../constitution.md) in full, verify the entire codebase follows all rules. This is structural — it catches coupling and layering violations that passing tests won't catch.
+- [ ] **Spec compliance check** — read [spec.md#success-criteria](spec.md#success-criteria) and [spec.md#key-properties](spec.md#key-properties), walk through every item against the actual implementation.
+- [ ] **Testing quality check** — read [constitution.md#testing](../constitution.md#testing) and audit: every key function has at least one test, test names follow consistent pattern, no tests that just restate implementation.
+- [ ] **Dead code check** — no modules, functions, or types exist without a current consumer; no commented-out code. Linter reports zero dead code warnings.
+- [ ] **Design principles check** — full codebase sweep per [constitution.md#design-principles](../constitution.md#design-principles): no premature abstractions, no single-use interfaces, no speculative extension points, no global mutable state.
+
+<!-- OPTIONAL: For projects with network interfaces:
+- [ ] Security tests pass (auth bypass, rate limiting, input validation)
+- [ ] Graceful shutdown: server drains in-flight requests
+-->
+
+<!-- OPTIONAL: For deployable/containerized projects:
 
 ---
 
-## Phase N+1: Docker & Deployment
+## Phase N+1: Packaging & Deployment
 
-> **Goal:** Production-ready Docker image with minimal attack surface.
-> **Key docs:** [environment.md#docker-strategy](environment.md#docker-strategy), [constitution.md#docker](../constitution.md#docker--deployment).
+> **Goal:** Production-ready build/package with minimal attack surface.
+> **Key docs:** [environment.md#docker-strategy](environment.md#docker-strategy) (if Docker), [constitution.md#docker](../constitution.md#docker--deployment).
 
 - [ ] **TN101** Add release/production build optimizations
-- [ ] **TN102** Write `.dockerignore` `[parallel: TN101]`
-  - Exclude: build artifacts, `.env`, `.git/`, data directories
-- [ ] **TN103** Write multi-stage Dockerfile (build stage + minimal runtime)
-  - Ref: [environment.md#docker-strategy](environment.md#docker-strategy)
-- [ ] **TN104** Update `docker-compose.yml` for production (volumes, health checks, restart policy) `[parallel: TN103]`
-- [ ] **TN105** Build and test Docker image
-  - Run: `docker compose build && docker compose up`, verify health check
+- [ ] **TN102** Write packaging config (Dockerfile, .dockerignore, release script, etc.)
+- [ ] **TN103** Build and test production artifact
+- [ ] **TN104** Verify production artifact works correctly
 
 ### Validation Gate N+1
-- [ ] `docker compose up` starts successfully
-- [ ] All prior validation gate items still pass from inside the container (regression guard)
-- [ ] `GET /health` returns 200 from container
-- [ ] Docker image is minimal (target < 50MB)
-- [ ] Non-root user in container
-- [ ] `trivy image` zero HIGH/CRITICAL
-- [ ] `.dockerignore` excludes build artifacts, `.env`, `.git/`
-- [ ] No secrets baked into Docker image
+- [ ] Production build succeeds
+- [ ] All prior validation gate items still pass (regression guard)
+- [ ] No secrets baked into build artifact
 - [ ] No `TODO`, stub placeholders, or `unimplemented` markers left in committed code
+-->
 
 ---
 
@@ -188,18 +149,14 @@ After each task, run the quality gate checks before moving on.
 
 > **Ref:** [spec.md#success-criteria](spec.md#success-criteria) for full checklist.
 
-- [ ] All validation gates pass (including all spec compliance checks)
+- [ ] All validation gates pass
 - [ ] Zero linter warnings, zero test failures
-- [ ] Zero HIGH/CRITICAL CVEs
 - [ ] Full flow works end-to-end
-- [ ] Tenant isolation enforced (verified by security tests)
-- [ ] All security headers present on every response
-- [ ] Audit log complete for all mutations
 
-**Final architecture compliance audit** — re-read [constitution.md](../constitution.md) and verify every rule is satisfied across the whole codebase, not just the phases where it was first checked. Pay particular attention to rules that apply globally (error handling, secret handling, input validation, layering) since they can be eroded incrementally across phases without any single gate catching it.
+**Final architecture compliance audit** — re-read [constitution.md](../constitution.md) and verify every rule is satisfied across the whole codebase. Pay particular attention to rules that apply globally (error handling, secret handling, input validation) since they can be eroded incrementally across phases.
 
-**Final design principles audit** — re-read [constitution.md#design-principles](../constitution.md#design-principles) and do a final sweep: YAGNI (no unused abstractions, no speculative generality), KISS (no unnecessary indirection, generics, or patterns), DRY (business rules have exactly one authoritative implementation), Single Responsibility (each module/function owns one thing), Functional Style (pure functions for business logic, no global mutable state), Parse Don't Validate (typed boundaries, enums for status fields), Fail Fast (errors returned immediately, no silent fallbacks), Least Surprise (functions do what their name says). Fix any violation found.
+**Final design principles audit** — re-read [constitution.md#design-principles](../constitution.md#design-principles) and do a final sweep: YAGNI, KISS, DRY, Single Responsibility, Parse Don't Validate, Fail Fast, Least Surprise.
 
-**Final spec compliance audit** — before marking complete, re-read [spec.md](spec.md), [design.md](design.md), [api.md](api.md), and [schema.md](schema.md) end-to-end and verify the implementation against each doc as a whole, not just the specific sections referenced by individual tasks. Check for: any endpoint or field defined in the docs but not implemented, any behavior in the implementation that contradicts the docs, any schema column or constraint that differs from the schema doc. If any discrepancy is found, it must be resolved and the relevant validation gate re-checked before final acceptance is granted.
+**Final spec compliance audit** — re-read [spec.md](spec.md) and [design.md](design.md) end-to-end and verify the implementation against each doc as a whole. Check for any behavior defined in docs but not implemented, or any implementation that contradicts the docs.
 
-**Docs sync check** — if the implementation revealed anything that forced a deviation from the original spec/design/schema docs (even a justified one), those docs must be updated to reflect reality before this gate is marked complete. The docs are the source of truth for future contributors; a doc that describes a design that was never built is worse than no doc.
+**Docs sync check** — if the implementation forced deviations from original docs, update them to reflect reality. The docs are the source of truth for future contributors.

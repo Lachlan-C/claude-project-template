@@ -1,10 +1,17 @@
 # API Reference
 
-> **Related files:** [schema.md](schema.md) (tables & fields) | [design.md](design.md) (system design) | [../constitution.md](../constitution.md) (immutable rules)
+<!-- OPTIONAL DOC: Include this file only if your project exposes a network API
+     (HTTP REST, GraphQL, gRPC, WebSocket, CLI-over-network, etc.) or a public library API.
+     To use: copy this file to docs/api.md and add it to the Related files headers
+     in design.md, spec.md, tasks.md, and the Canonical Sources table in CLAUDE.md. -->
 
-This document is the single source of truth for all HTTP endpoints, request/response payloads, authentication requirements, and external API interactions. **Read this before adding or modifying any endpoint.**
+> **Related files:** [../design.md](../design.md) (system design) | [../../constitution.md](../../constitution.md) (immutable rules)
+>
+> If your project also has a data model: | [schema.md](schema.md) (data model)
 
-> **This doc owns:** All endpoint URLs, request/response shapes, HTTP status codes, auth requirements, rate limits, and external API contracts. Other docs ([spec.md](spec.md), [tasks.md](tasks.md)) reference endpoints here by link — they never repeat the URL or payload inline.
+This document is the single source of truth for all API endpoints, request/response payloads, authentication requirements, and external API interactions. **Read this before adding or modifying any endpoint.**
+
+> **This doc owns:** All endpoint URLs, request/response shapes, status codes, auth requirements, rate limits, and external API contracts. Other docs reference endpoints here by link — they never repeat the URL or payload inline.
 
 ---
 
